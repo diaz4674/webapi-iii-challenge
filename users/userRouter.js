@@ -24,6 +24,7 @@ router.get('/', async (req, res) => {
     }
 });
 
+//GET by ID
 router.get('/:id', validateUserId, (req, res) => {
     res.status(200).json(req.user)
 });
@@ -45,7 +46,7 @@ router.put('/:id', (req, res) => {
 async function validateUserId(req, res, next) {
     try{
         const {id} = req.params;
-        const user = await Users.findById(id)
+        const user = await Users.getById(id)
 
         if(user){
             req.user = user;
