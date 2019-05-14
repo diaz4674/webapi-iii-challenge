@@ -37,12 +37,24 @@ router.delete('/:id', (req, res) => {
 
 });
 
-router.put('/:id', (req, res) => {
-
+router.put('/:id', validateUserId, validateUser, async (req, res) => {
+    try{
+        const user =await Users.update(req.params.id, req.body)
+        if(user){
+            res.status(200).json(user);
+        } else {
+            res.status(404).json({message: 'The user could not be found'})
+        }
+    } catch(err){
+        res.status(500).json({
+            message: 'Error updating the user'
+        })
+    }
 });
 
 //custom middleware
 
+//Validate by ID
 async function validateUserId(req, res, next) {
     try{
         const {id} = req.params;
@@ -59,8 +71,14 @@ async function validateUserId(req, res, next) {
     }
 };
 
-function validateUser(req, res, next) {
 
+//Validate body
+function validateUser(req, res, next) {
+    if(req.body && Object.keys(req.body).length){
+        next();
+    } else {
+        next({message: 'please include request body'})
+    }
 };
 
 function validatePost(req, res, next) {
