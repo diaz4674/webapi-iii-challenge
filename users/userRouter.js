@@ -5,12 +5,22 @@ const router = express.Router();
 
 
 
-router.post('/', (req, res) => {
-
+router.post('/', validatePost, async (req, res) => {
+    const newUser = await Users.insert(req.body)
+    res.status(200).json(newUser);
 });
 
-router.post('/:id/posts', (req, res) => {
-
+router.post('/:id/posts', validateUserId, async (req, res) => {
+    try{
+        const user = await Users.getUserPosts(req.body);
+        if(user){
+            res.status(200).json(user);
+        } else {
+            res.status(400).json({message: "missing post data"})
+        }
+    } catch(err){ 
+       next({message: "missing required text field"})
+    }
 });
 
 //GET router
@@ -29,8 +39,18 @@ router.get('/:id', validateUserId, (req, res) => {
     res.status(200).json(req.user)
 });
 
-router.get('/:id/posts', (req, res) => {
+router.get('/:id/posts', validatePost, async (req, res) => {
 
+    try{
+        const user = await Users.getUserPosts(req.body);
+        if(user){
+            res.status(200).json(user);
+        } else {
+            res.status(400).json({message: "missing post data"})
+        }
+    } catch(err){ 
+       next({message: "missing required text field"})
+    }
 });
 
 router.delete('/:id', (req, res) => {
@@ -74,15 +94,28 @@ async function validateUserId(req, res, next) {
 
 //Validate body
 function validateUser(req, res, next) {
-    if(req.body && Object.keys(req.body).length){
+    if(req.body.name && Object.keys(req.body.name).length){
+        console.log(Object.keys(req.body).length)
         next();
     } else {
         next({message: 'please include request body'})
     }
 };
 
-function validatePost(req, res, next) {
+ function validatePost (req, res, next) {
+    if(    req.body && Object.keys(req.body).length) {
+        
+            if(req.body.name && Object.keys(req.body.name).length){
+                
+            next();
+        } else {
+            res.status(400).json({message: "missing required text field" })
+        }
+         
+} else {
+    next({message: "missing post data"})
+}
 
-};
+}
 
 module.exports = router;
