@@ -1,27 +1,31 @@
 const express = require('express');
 
 const Users = require('./userDb.js')
+const Post = require('../posts/postDb.js')
 const router = express.Router();
 
 
-
+//POST router
 router.post('/', validatePost, async (req, res) => {
     const newUser = await Users.insert(req.body)
     res.status(200).json(newUser);
 });
 
+
+
+//POST with ID
 router.post('/:id/posts', validateUserId, async (req, res) => {
-    try{
-        const user = await Users.getUserPosts(req.body);
-        if(user){
-            res.status(200).json(user);
-        } else {
-            res.status(400).json({message: "missing post data"})
-        }
-    } catch(err){ 
-       next({message: "missing required text field"})
+    const {id} = req.params;
+    //Getting objects made by user, and making a new key to set set a new object
+    const newPost = {...req.body, user_id: id}
+    try {
+    const post = await Post.insert(newPost)
+    res.status(200).json(post);}
+    catch (err){
+        next({message: 'no'})
     }
 });
+
 
 //GET router
 router.get('/', async (req, res) => {
@@ -53,11 +57,14 @@ router.get('/:id/posts', validatePost, async (req, res) => {
     }
 });
 
+
+//DELETE
 router.delete('/:id', validateUserId, async (req, res) => {
     const removedUser = await Users.remove(req.params.id);
     res.status(200).json(removedUser)
 });
 
+//PUT
 router.put('/:id', validateUserId, validateUser, async (req, res) => {
     try{
         const user =await Users.update(req.params.id, req.body)
@@ -93,7 +100,7 @@ async function validateUserId(req, res, next) {
 };
 
 
-//Validate body
+//Validate User
 function validateUser(req, res, next) {
     if(req.body.name && Object.keys(req.body.name).length){
         console.log(Object.keys(req.body).length)
@@ -103,20 +110,17 @@ function validateUser(req, res, next) {
     }
 };
 
+//Validate POST
  function validatePost (req, res, next) {
-    if(    req.body && Object.keys(req.body).length) {
-        
+    if(req.body && Object.keys(req.body).length) {
             if(req.body.name && Object.keys(req.body.name).length){
-                
             next();
         } else {
             res.status(400).json({message: "missing required text field" })
         }
-         
 } else {
     next({message: "missing post data"})
 }
-
 }
 
 module.exports = router;

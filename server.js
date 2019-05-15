@@ -4,6 +4,7 @@ const logger = require('morgan')
 
 const usersRouter = require('./users/userRouter.js');
 
+
 const server = express();
 
 //Global Middleware

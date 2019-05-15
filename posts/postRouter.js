@@ -1,9 +1,11 @@
 const express = 'express';
 
+const Posts = require('./postDb.js');
 const router = express.Router();
 
-router.get('/', (req, res) => {
-
+router.get('/', async (req, res) => {
+const posts = await Posts.get(req.body)
+res.status(200).json(posts)
 });
 
 router.get('/:id', (req, res) => {
